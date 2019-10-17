@@ -23,6 +23,9 @@ typedef struct
 {
 	char* name;
 	size_t size;
+	char* icon;
+	char* color;
+	time_t modify;
 } File;
 
 int main(int argc, char** argv)
@@ -173,13 +176,14 @@ int main(int argc, char** argv)
 
 void usage(void)
 {
-	printf("\tUsage: `cls [OPTIONS] [PATH?]`\tOrdering doesn't matter\n");
-	printf("\n\t-a, --all\t\t\tShow files which start with . (dotfiles). Doesn't print '.' "
+	printf("Usage: `cls [OPTIONS] [PATH?]`\tOrdering doesn't matter\n");
+	printf("\n\t-a, --all\t\tShow files which start with . (dotfiles). Doesn't print '.' "
 		   "& '..'\n");
-	printf("\t-h, --human\t\t\tPrint file sizes in a humar readable format (1024B=1K)\n");
-	printf("\t-l, --long\t\t\tUse a long listing format. Permissions, ownership, size, "
+	printf("\t-h, --human\t\tPrint file sizes in a humar readable format (1024B=1K)\n");
+	printf("\t-l, --long\t\tUse a long listing format. Permissions, ownership, size, "
 		   "modify date\n");
-	printf("-v, -H, -u, --version, --usage, --help\tPrint this screen\n");
+	printf("-v, -H, -u, --version, --usage, --help:\tPrint this screen\n");
+	printf("\nVersion:0.1.0\nonurorkunkader1999@gmail.com\nonurkader@protonmail.com\n");
 	exit(1);
 }
 
