@@ -1,3 +1,4 @@
+#include "colour.c"
 #include "icons.c"
 
 #include <dirent.h>
@@ -24,7 +25,7 @@ typedef struct
 	char* name;
 	size_t size;
 	char* icon;
-	char* color;
+	color_t color;
 	time_t modify;
 } File;
 

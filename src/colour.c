@@ -3,16 +3,13 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#define CLAMP(val, min, max) ((val < min) ? (val = min) : (val > max) ? (val = max) : val)
+#define CLAMP(val, min, max) ((val < min) ? (min) : (val > max) ? (max) : val)
 
 typedef struct
 {
 	uint8_t r, g, b;
-} colour;
-
-typedef colour color;
-typedef colour color_t;
-typedef colour colour_t;
+	char str[24];
+} color_t;
 
 char* getGREY(uint8_t g)
 {
@@ -30,6 +27,29 @@ char* getRGB(uint8_t r, uint8_t g, uint8_t b)
 	char* buff;
 	sprintf(buff, "\033[38;2;%u;%u;%um", r, g, b);
 	return buff;
+}
+
+void setGREY(color_t* color, uint8_t g)
+{
+	CLAMP(g, 0U, 255U);
+	color->r = color->g = color->b = g;
+	sprintf(color->str, "\033[38;2;%u;%u;%um", g, g, g);
+}
+
+void setRGB(color_t* color, uint8_t r, uint8_t g, uint8_t b)
+{
+	CLAMP(r, 0U, 255U);
+	CLAMP(g, 0U, 255U);
+	CLAMP(b, 0U, 255U);
+	color->r = r;
+	color->g = g;
+	color->b = b;
+	sprintf(color->str, "\033[38;2;%u;%u;%um", r, g, b);
+}
+
+void setStr(color_t* color)
+{
+	sprintf(color->str, "\033[38;2;%u;%u;%um", color->r, color->g, color->b);
 }
 
 const static char RESET[] = "\033[m", BLACK[] = "\033[38;2;0;0;0m",
