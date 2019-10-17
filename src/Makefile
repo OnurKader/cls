@@ -5,7 +5,7 @@ LIBS=
 all: clean cls
 
 clean:
-	rm -f ../bin/cls
+	clear && rm -f ../bin/cls
 cls:
 	$(CC) -o ../bin/cls main.c $(CFLAGS) $(LIBS) -O3
 install:

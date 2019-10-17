@@ -27,8 +27,6 @@ int main(int argc, char** argv)
 {
 	// TODO finish File struct which wraps dirent and stat / lstat(), modify time stuff,
 	// owners...
-	// TODO add getopt loop to get the dir, if no string found it'll be '.'. args are
-	// probably -alhCHv --help --version --usage -? (if possible). (C : colorless?)
 	// TODO add an external Color class
 	// TODO Terminal checks, 256 Colors.
 	// TODO Kibi-byte for sizes. Think of a better way to determine 'KGB' rather than an
@@ -36,7 +34,7 @@ int main(int argc, char** argv)
 	// TODO -l option, long listing
 	// TODO Figure out icons, just a simple map should be fine, or maybe an array but that
 	// wouldn't work nvm...
-	// TODO Reverse the array
+	// TODO Write your own sort function that checks the file type, not just alphabetically
 
 	struct dirent** dirs;
 	char* dir = ".";
@@ -56,8 +54,8 @@ int main(int argc, char** argv)
 		the future maybe change to -R
 	*/
 	// Get the options and set the necessary flags
-	opterr = 0;
 	{
+		opterr = 0;
 		int opt;
 		static struct option long_options[] = {{"all", no_argument, &b_all, 1},
 											   {"long", no_argument, &b_long, 1},
@@ -102,7 +100,7 @@ int main(int argc, char** argv)
 	n_of_dirs = scandir(dir, &dirs, NULL, alphasort);
 	if(n_of_dirs < 0)
 	{
-		perror("scandir: ");
+		perror("scandir:");
 		return 1;
 	}
 
@@ -113,6 +111,7 @@ int main(int argc, char** argv)
 	{
 		char* name = dirs[n_of_dirs]->d_name;
 
+		// Ignore Current and parent dirs.
 		if(!strcmp(name, ".") || !strcmp(name, ".."))
 		{
 			free(dirs[n_of_dirs]);
@@ -121,39 +120,48 @@ int main(int argc, char** argv)
 
 		if(b_all)
 		{
+			v_dirs[num_of_files].name = name;
+			++num_of_files;
+		}
+		else
+		{
 			if(name[0] == '.')
-			{
-				v_dirs[n_of_dirs - 1].name = name;
-				++num_of_files;
-			}
-			else
 			{
 				free(dirs[n_of_dirs]);
 				continue;
 			}
-		}
-		else
-		{
-			v_dirs[n_of_dirs - 1].name = name;
-			++num_of_files;
+			else
+			{
+				v_dirs[num_of_files].name = name;
+				++num_of_files;
+			}
 		}
 
 		// TODO Resize the v_dirs array at the end of the while loop. maybe keep a variable
-		// of
-		// the size.
+		// of the size.
 		/* printf("Type: %d\n", */
 		/* dirs[n_of_dirs]->d_type);	// Directory = 4, Regular File = 8, Symlink = 10 */
-		// Currently prints in reverse
 		free(dirs[n_of_dirs]);
 	}
-	num_of_files -= 2;	  // Get rid of . and ..
 
-	for(int i = 0; i < num_of_files; ++i)
+	/* File* temp = realloc(v_dirs, num_of_files * sizeof(File)); */
+
+	for(int i = num_of_files - 1; i >= 0; --i)
 	{
+		struct stat status;
+		char* name = malloc(128);
+		name = strcpy(name, dir);
+		strcat(name, "/");
+		strcat(name, v_dirs[i].name);
+		// We add dir+/ so if we do cls .., it'll work properly.
+
+		lstat(name, &status);	 // lstat doesn't follow links, stat does.
+		free(name);
+		printf("Size:%ld Mode:%u ",
+			   status.st_size,
+			   status.st_mode);	   // S_ISREG S_ISDIR, S_ISLNK
 		printf("%s\n", v_dirs[i].name);
 	}
-
-	printf("No. of files:%d\n", num_of_files);
 
 	free(dirs);
 	return 0;
@@ -164,3 +172,4 @@ void usage(void)
 	printf("Usage:\n");
 	exit(1);
 }
+
