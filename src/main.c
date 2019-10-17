@@ -1,3 +1,5 @@
+#include "icons.c"
+
 #include <dirent.h>
 #include <getopt.h>
 #include <grp.h>
@@ -6,13 +8,13 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
 
 void usage(void);
+void getSize(short*, short*);
 
 static int b_all = false, b_long = false, b_human = false, b_color = true,
 		   b_reverse = false;
@@ -39,6 +41,8 @@ int main(int argc, char** argv)
 	struct dirent** dirs;
 	char* dir = ".";
 	int n_of_dirs;
+	short t_width, t_height;
+	getSize(&t_width, &t_height);
 
 	/* Flags:
 		all = show dotfiles except for '.' & '..'
@@ -169,7 +173,20 @@ int main(int argc, char** argv)
 
 void usage(void)
 {
-	printf("Usage:\n");
+	printf("\tUsage: `cls [OPTIONS] [PATH?]`\tOrdering doesn't matter\n");
+	printf("\n\t-a, --all\t\t\tShow files which start with . (dotfiles). Doesn't print '.' "
+		   "& '..'\n");
+	printf("\t-h, --human\t\t\tPrint file sizes in a humar readable format (1024B=1K)\n");
+	printf("\t-l, --long\t\t\tUse a long listing format. Permissions, ownership, size, "
+		   "modify date\n");
+	printf("-v, -H, -u, --version, --usage, --help\tPrint this screen\n");
 	exit(1);
 }
 
+void getSize(short* w, short* h)
+{
+	struct winsize size;
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
+	*w = size.ws_col;
+	*h = size.ws_row;
+}
