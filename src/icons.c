@@ -20,6 +20,8 @@ char* getIcon(char* filename)
 	char ext[16];
 	char* icon;
 	char* p = rindex(filename, '.');
+	if(p == NULL)
+		return "\uf15b";
 	unsigned short n = 0U;
 	while(*(p++) != '\0')
 		ext[n++] = *p;

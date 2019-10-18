@@ -14,12 +14,6 @@
 #include <time.h>
 #include <unistd.h>
 
-void usage(void);
-void getSize(short*, short*);
-
-static int b_all = false, b_long = false, b_human = false, b_color = true,
-		   b_reverse = false;
-
 typedef struct
 {
 	char* name;
@@ -28,6 +22,13 @@ typedef struct
 	color_t color;
 	time_t modify;
 } File;
+
+void usage(void);
+void getSize(short*, short*);
+void printFile(File*, struct stat*);
+
+static int b_all = false, b_long = false, b_human = false, b_color = true,
+		   b_reverse = false;
 
 int main(int argc, char** argv)
 {
@@ -115,61 +116,61 @@ int main(int argc, char** argv)
 	File* v_dirs = calloc(n_of_dirs, sizeof(File));
 	uint16_t num_of_files = 0U;
 
-	while(n_of_dirs--)
 	{
-		char* name = dirs[n_of_dirs]->d_name;
+		uint8_t dotflag = 0U;
+		while(n_of_dirs--)
+		{
+			char* name = dirs[n_of_dirs]->d_name;
 
-		// Ignore Current and parent dirs.
-		if(!strcmp(name, ".") || !strcmp(name, ".."))
-		{
-			free(dirs[n_of_dirs]);
-			continue;
-		}
-
-		if(b_all)
-		{
-			v_dirs[num_of_files].name = name;
-			++num_of_files;
-		}
-		else
-		{
-			if(name[0] == '.')
+			// Ignore Current and parent dirs.
+			if(dotflag <= 2 && (!strcmp(name, ".") || !strcmp(name, "..")))
 			{
+				++dotflag;
 				free(dirs[n_of_dirs]);
 				continue;
 			}
+
+			if(b_all)
+			{
+				v_dirs[num_of_files++].name = name;
+			}
 			else
 			{
-				v_dirs[num_of_files].name = name;
-				++num_of_files;
+				if(name[0] == '.')
+				{
+					free(dirs[n_of_dirs]);
+					continue;
+				}
+				else
+				{
+					v_dirs[num_of_files++].name = name;
+				}
 			}
+
+			free(dirs[n_of_dirs]);
 		}
-
-		// TODO Resize the v_dirs array at the end of the while loop. maybe keep a variable
-		// of the size.
-		/* printf("Type: %d\n", */
-		/* dirs[n_of_dirs]->d_type);	// Directory = 4, Regular File = 8, Symlink = 10 */
-		free(dirs[n_of_dirs]);
+		free(dirs);
 	}
-	free(dirs);
-
-	v_dirs = realloc(v_dirs, num_of_files * sizeof(File));
+	{
+		File* temp = realloc(v_dirs, num_of_files * sizeof(File));
+		if(temp != NULL)
+			v_dirs = temp;
+	}
 
 	for(int i = num_of_files - 1; i >= 0; --i)
 	{
-		struct stat status;
-		char* name = malloc(128);
-		name = strcpy(name, dir);
+		char* name = malloc(128 * sizeof(char));
+		strcpy(name, dir);
 		strcat(name, "/");
 		strcat(name, v_dirs[i].name);
-		// We add dir+/ so if we do cls .., it'll work properly.
+		// We add `dir`+/ so if we do cls .., it'll work properly. Using relative paths
 
+		struct stat status;
 		lstat(name, &status);	 // lstat doesn't follow links, stat does.
 		free(name);
-		printf("Size:%ld Mode:%u ",
-			   status.st_size,
-			   status.st_mode);	   // S_ISREG S_ISDIR, S_ISLNK
-		printf("%s\n", v_dirs[i].name);
+
+		File file = {.name = v_dirs[i].name, .icon = getIcon(v_dirs[i].name)};
+		printFile(&file, &status);
 	}
 
 	free(v_dirs);
@@ -181,10 +182,10 @@ void usage(void)
 	printf("Usage: `cls [OPTIONS] [PATH?]`\tOrdering doesn't matter\n");
 	printf("\n\t-a, --all\t\tShow files which start with . (dotfiles). Doesn't print '.' "
 		   "& '..'\n");
-	printf("\t-h, --human\t\tPrint file sizes in a humar readable format (1024B=1K)\n");
+	printf("\t-h, --human\t\tPrint file sizes in a human readable format (1024B=1K)\n");
 	printf("\t-l, --long\t\tUse a long listing format. Permissions, ownership, size, "
 		   "modify date\n");
-	printf("-v, -H, -u, --version, --usage, --help:\tPrint this screen\n");
+	printf("\t-v, -H, -u, --version, --usage, --help:\tPrint this screen\n");
 	printf("\nVersion:0.1.0\nonurorkunkader1999@gmail.com\nonurkader@protonmail.com\n");
 	exit(1);
 }
@@ -196,3 +197,22 @@ void getSize(short* w, short* h)
 	*w = size.ws_col;
 	*h = size.ws_row;
 }
+
+void printFile(File* file, struct stat* status)
+{
+	if(b_long || !b_long)
+	{
+		const char* color =
+			S_ISREG(status->st_mode)
+				? COLOUR_FILE
+				: (S_ISDIR(status->st_mode) ? COLOUR_DIR
+											: (S_ISLNK(status->st_mode) ? YELLOW : WHITE));
+		printf("\t%s%s %s%c",
+			   color,
+			   file->icon,
+			   file->name,
+			   S_ISDIR(status->st_mode) ? '/' : (S_ISLNK(status->st_mode) ? '*' : ' '));
+		printf("%s\n", RESET);
+	}
+}
+
