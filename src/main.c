@@ -112,7 +112,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	File v_dirs[n_of_dirs];
+	File* v_dirs = calloc(n_of_dirs, sizeof(File));
 	uint16_t num_of_files = 0U;
 
 	while(n_of_dirs--)
@@ -151,8 +151,9 @@ int main(int argc, char** argv)
 		/* dirs[n_of_dirs]->d_type);	// Directory = 4, Regular File = 8, Symlink = 10 */
 		free(dirs[n_of_dirs]);
 	}
+	free(dirs);
 
-	/* File* temp = realloc(v_dirs, num_of_files * sizeof(File)); */
+	v_dirs = realloc(v_dirs, num_of_files * sizeof(File));
 
 	for(int i = num_of_files - 1; i >= 0; --i)
 	{
@@ -171,7 +172,7 @@ int main(int argc, char** argv)
 		printf("%s\n", v_dirs[i].name);
 	}
 
-	free(dirs);
+	free(v_dirs);
 	return 0;
 }
 
