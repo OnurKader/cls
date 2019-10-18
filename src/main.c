@@ -151,6 +151,7 @@ int main(int argc, char** argv)
 		}
 		free(dirs);
 	}
+
 	{
 		File* temp = realloc(v_dirs, num_of_files * sizeof(File));
 		if(temp != NULL)
