@@ -92,6 +92,7 @@ int main(int argc, char** argv)
 					if(long_options[opt_index].flag != 0)
 						break;
 					printf("option %s\n", long_options[opt_index].name);
+					break;
 				case 'a': b_all = 1; break;
 				case 'l': b_long = 1; break;
 				case 'h': b_human = 1; break;
@@ -173,7 +174,7 @@ int main(int argc, char** argv)
 
 		File file;
 		strcpy(file.name, v_dirs[i].name);
-		file.icon = getIcon(file.name);
+		file.icon = getIcon(file.name, S_ISDIR(status.st_mode));
 		printFile(&file, &status);
 		free(name);
 	}

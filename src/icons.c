@@ -10,7 +10,6 @@ struct Icon
 };
 
 struct Icon icons[] = {
-
 	// Peki <3
 	{"Peki", "\uf004 "},
 	{"peki", "\uf004 "},
@@ -184,31 +183,35 @@ struct Icon icons[] = {
 	{"steam", "\uf9d2"}};
 
 //															  
-const static char default_file[] = "\uf15b", default_dir[] = "\ue5fe";
+static const char default_file[] = "\uf15b", default_dir[] = "\ue5fe";
 
-char* getIcon(char* filename)
+char* getIcon(char* filename, int is_dir)
 {
 	// Find the last '/' if exists or find last ., go reverse and take it from there
 	const unsigned long num_of_icons = (sizeof(icons) / sizeof(struct Icon));
-	char ext[16];
-	char* icon = calloc(9, sizeof(char));
+	char ext[128];
+	char* icon = malloc(9 * sizeof(char));
 	char* p = rindex(filename, '.');
-	if(p == NULL || *p == '\0')
-		p = (filename - 1);
-	unsigned short n = 0U;
-	while(*(p++) != '\0')
-		ext[n++] = *p;
-
-	for(unsigned long i = 0U; i < num_of_icons; ++i)
+	if(p == NULL)
 	{
-		if(!strcmp(icons[i].ext, ext))
-		{
-			strcpy(icon, icons[i].icon);
-			return icon;
-		}
+		// If there isn't a dot in the filename
+		strcpy(ext, filename);
+		free(p);
+	}
+	else
+	{
+		unsigned short n = 0U;
+		while(*(p++) != '\0')
+			ext[n++] = *p;
 	}
 
-	return "\uf15b ";	 // If no extension was found, return  , default file icon.
+	for(unsigned long i = 0U; i < num_of_icons; ++i)
+		if(!strcmp(icons[i].ext, ext))
+			return strcpy(icon, icons[i].icon);
+
+	return is_dir
+			   ? "\ue5fe "
+			   : "\uf15b ";	   // If no extension was found, return  , default file icon.
 }
 
 #endif
