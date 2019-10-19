@@ -16,7 +16,7 @@
 
 typedef struct
 {
-	char* name;
+	char name[256];
 	size_t size;
 	char* icon;
 	color_t color;
@@ -120,7 +120,9 @@ int main(int argc, char** argv)
 		uint8_t dotflag = 0U;
 		while(n_of_dirs--)
 		{
-			char* name = dirs[n_of_dirs]->d_name;
+			char* name = malloc(256 * sizeof(char));
+			strcpy(name, dirs[n_of_dirs]->d_name);
+			/* char* name = dirs[n_of_dirs]->d_name; */
 
 			// Ignore Current and parent dirs.
 			if(dotflag <= 2 && (!strcmp(name, ".") || !strcmp(name, "..")))
@@ -132,7 +134,7 @@ int main(int argc, char** argv)
 
 			if(b_all)
 			{
-				v_dirs[num_of_files++].name = name;
+				strcpy(v_dirs[num_of_files++].name, name);
 			}
 			else
 			{
@@ -143,11 +145,11 @@ int main(int argc, char** argv)
 				}
 				else
 				{
-					v_dirs[num_of_files++].name = name;
+					strcpy(v_dirs[num_of_files++].name, name);
 				}
 			}
-
 			free(dirs[n_of_dirs]);
+			free(name);
 		}
 		free(dirs);
 	}
@@ -160,7 +162,7 @@ int main(int argc, char** argv)
 
 	for(int i = num_of_files - 1; i >= 0; --i)
 	{
-		char* name = malloc(128 * sizeof(char));
+		char* name = malloc(256 * sizeof(char));
 		strcpy(name, dir);
 		strcat(name, "/");
 		strcat(name, v_dirs[i].name);
@@ -168,15 +170,19 @@ int main(int argc, char** argv)
 
 		struct stat status;
 		lstat(name, &status);	 // lstat doesn't follow links, stat does.
-		free(name);
 
-		File file = {.name = v_dirs[i].name, .icon = getIcon(v_dirs[i].name)};
+		File file;
+		strcpy(file.name, v_dirs[i].name);
+		file.icon = getIcon(file.name);
 		printFile(&file, &status);
+		free(name);
 	}
 
 	free(v_dirs);
 	return 0;
 }
+
+// Functions
 
 void usage(void)
 {
@@ -208,7 +214,7 @@ void printFile(File* file, struct stat* status)
 				? COLOUR_FILE
 				: (S_ISDIR(status->st_mode) ? COLOUR_DIR
 											: (S_ISLNK(status->st_mode) ? YELLOW : WHITE));
-		printf("\t%s%s %s%c",
+		printf("\t%s%s%s%c",
 			   color,
 			   file->icon,
 			   file->name,

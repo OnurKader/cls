@@ -7,6 +7,6 @@ all: clean cls
 clean:
 	clear && rm -f ../bin/cls
 cls:
-	$(CC) -o ../bin/cls main.c $(CFLAGS) $(LIBS) -O3
+	$(CC) -o ../bin/cls main.c $(CFLAGS) $(LIBS) -O3 -Wall -Wextra -pedantic -pedantic-errors
 install:
 	sudo ln -sf ~/Peki/C/Projects/cls/bin/cls /usr/bin/cls
