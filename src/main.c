@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include "colour.c"
 #include "icons.c"
 
@@ -26,6 +28,8 @@ typedef struct
 void usage(void);
 void getSize(short*, short*);
 void printFile(File*, struct stat*);
+char* to_lower(const char[256]);
+int sortFile(const struct dirent**, const struct dirent**);
 
 static int b_all = false, b_long = false, b_human = false, b_color = true,
 		   b_reverse = false;
@@ -34,14 +38,9 @@ int main(int argc, char** argv)
 {
 	// TODO finish File struct which wraps dirent and stat / lstat(), modify time stuff,
 	// owners...
-	// TODO add an external Color class
-	// TODO Terminal checks, 256 Colors.
 	// TODO Kibi-byte for sizes. Think of a better way to determine 'KGB' rather than an
 	// intense ternary
 	// TODO -l option, long listing
-	// TODO Figure out icons, just a simple map should be fine, or maybe an array but that
-	// wouldn't work nvm...
-	// TODO Write your own sort function that checks the file type, not just alphabetically
 
 	struct dirent** dirs;
 	char* dir = ".";
@@ -58,6 +57,7 @@ int main(int argc, char** argv)
 
 		color = by default on, colorful version. Maybe set it in color struct? Or functions
 		for color so it returns an empty string
+		// TODO add no color option
 
 		reverse = reverse printing order, currently -r but for Recursive Tree printing in
 		the future maybe change to -R
@@ -107,7 +107,7 @@ int main(int argc, char** argv)
 	if(optind < argc)
 		dir = argv[optind++];
 
-	n_of_dirs = scandir(dir, &dirs, NULL, alphasort);
+	n_of_dirs = scandir(dir, &dirs, NULL, sortFile);
 	if(n_of_dirs < 0)
 	{
 		perror("scandir:");
@@ -123,7 +123,6 @@ int main(int argc, char** argv)
 		{
 			char* name = malloc(256 * sizeof(char));
 			strcpy(name, dirs[n_of_dirs]->d_name);
-			/* char* name = dirs[n_of_dirs]->d_name; */
 
 			// Ignore Current and parent dirs.
 			if(dotflag <= 2 && (!strcmp(name, ".") || !strcmp(name, "..")))
@@ -134,9 +133,7 @@ int main(int argc, char** argv)
 			}
 
 			if(b_all)
-			{
 				strcpy(v_dirs[num_of_files++].name, name);
-			}
 			else
 			{
 				if(name[0] == '.')
@@ -176,6 +173,7 @@ int main(int argc, char** argv)
 		strcpy(file.name, v_dirs[i].name);
 		file.icon = getIcon(file.name, S_ISDIR(status.st_mode));
 		printFile(&file, &status);
+		printf("\n");
 		free(name);
 	}
 
@@ -210,17 +208,55 @@ void printFile(File* file, struct stat* status)
 {
 	if(b_long || !b_long)
 	{
-		const char* color =
-			S_ISREG(status->st_mode)
-				? COLOUR_FILE
-				: (S_ISDIR(status->st_mode) ? COLOUR_DIR
-											: (S_ISLNK(status->st_mode) ? YELLOW : WHITE));
+		strcpy(file->color.str,
+			   S_ISREG(status->st_mode)
+				   ? COLOUR_FILE
+				   : (S_ISDIR(status->st_mode)
+						  ? COLOUR_DIR
+						  : (S_ISLNK(status->st_mode) ? YELLOW : WHITE)));
+
 		printf("\t%s%s%s%c",
-			   color,
+			   file->color.str,
 			   file->icon,
 			   file->name,
 			   S_ISDIR(status->st_mode) ? '/' : (S_ISLNK(status->st_mode) ? '*' : ' '));
-		printf("%s\n", RESET);
+		printf("%s", RESET);
 	}
+}
+
+char upper(const char c)
+{
+	if(c >= 'a' && c <= 'z')
+		return (c - 32);
+	return c;
+}
+
+char lower(const char c)
+{
+	if(c >= 'A' && c <= 'Z')
+		return (c + 32);
+	return c;
+}
+
+char* to_lower(const char str[256])
+{
+	char* temp = malloc(256 * sizeof(char));
+	uint8_t i = 0U;
+	do
+	{
+		temp[i++] = lower(*(str));
+	} while(*(str++) != '\0');
+
+	return temp;
+}
+
+int sortFile(const struct dirent** fir, const struct dirent** sec)
+{
+	// 4 for dirs, 8 for reg
+	if((*fir)->d_type == 4 && (*sec)->d_type != 4)
+		return -1;
+	else if((*fir)->d_type != 4 && (*sec)->d_type == 4)
+		return 1;
+	return strverscmp(to_lower((*fir)->d_name), to_lower((*sec)->d_name));
 }
 

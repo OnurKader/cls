@@ -1,6 +1,7 @@
 #ifndef ICONS_C
 #define ICONS_C
 #include <stdlib.h>
+#define _GNU_SOURCE
 #include <string.h>
 
 struct Icon
