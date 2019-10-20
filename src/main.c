@@ -1,9 +1,9 @@
 #define _GNU_SOURCE
-
 #include "colour.c"
 #include "icons.c"
 
 #include <dirent.h>
+#include <errno.h>
 #include <getopt.h>
 #include <grp.h>
 #include <pwd.h>
@@ -108,16 +108,31 @@ int main(int argc, char** argv)
 		dir = argv[optind++];
 
 	n_of_dirs = scandir(dir, &dirs, NULL, sortFile);
-	if(n_of_dirs < 0)
+	if(n_of_dirs <= 0)
 	{
-		perror("scandir:");
-		return 1;
+		if(errno == ENOENT)
+		{
+			fprintf(stderr, "\t\033[1;31mDirectory Not Found.\033[m\n");
+			return 1;
+		}
+		else if(errno == ENOTDIR)
+		{
+			struct stat status;
+			stat(dir, &status);
+			File file;
+			strcpy(file.name, dir);
+			file.icon = getIcon(file.name, 0);
+			printFile(&file, &status);
+			printf("\n");
+		}
+		return 0;
 	}
 
 	File* v_dirs = calloc(n_of_dirs, sizeof(File));
 	uint16_t num_of_files = 0U;
 
 	{
+		// Unnecessary scope
 		uint8_t dotflag = 0U;
 		while(n_of_dirs--)
 		{

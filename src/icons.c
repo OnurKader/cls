@@ -1,7 +1,6 @@
 #ifndef ICONS_C
 #define ICONS_C
 #include <stdlib.h>
-#define _GNU_SOURCE
 #include <string.h>
 
 struct Icon
@@ -183,8 +182,7 @@ struct Icon icons[] = {
 	{"minecraft", "\uf872 "},
 	{"steam", "\uf9d2"}};
 
-//															  
-static const char default_file[] = "\uf15b", default_dir[] = "\ue5fe";
+static char DEFAULT_FILE[] = "\uf15b ", DEFAULT_DIR[] = "\ue5fe ";
 
 char* getIcon(char* filename, int is_dir)
 {
@@ -202,6 +200,7 @@ char* getIcon(char* filename, int is_dir)
 	else
 	{
 		unsigned short n = 0U;
+		// There must be a function for this!
 		while(*(p++) != '\0')
 			ext[n++] = *p;
 	}
@@ -210,9 +209,7 @@ char* getIcon(char* filename, int is_dir)
 		if(!strcmp(icons[i].ext, ext))
 			return strcpy(icon, icons[i].icon);
 
-	return is_dir
-			   ? "\ue5fe "
-			   : "\uf15b ";	   // If no extension was found, return  , default file icon.
+	return is_dir ? DEFAULT_DIR : DEFAULT_FILE;
 }
 
 #endif
