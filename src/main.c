@@ -19,6 +19,7 @@
 typedef struct
 {
 	char name[256];
+	char rel_name[256];
 	size_t size;
 	char* icon;
 	color_t color;
@@ -186,6 +187,7 @@ int main(int argc, char** argv)
 
 		File file;
 		strcpy(file.name, v_dirs[i].name);
+		strcpy(file.rel_name, name);
 		file.icon = getIcon(file.name, S_ISDIR(status.st_mode));
 		printFile(&file, &status);
 		printf("\n");
@@ -221,29 +223,35 @@ void getSize(short* w, short* h)
 
 void printFile(File* file, struct stat* status)
 {
-	if(b_long || !b_long)
+	switch(status->st_mode & S_IFMT)
 	{
-		strcpy(file->color.str,
-			   S_ISREG(status->st_mode)
-				   ? COLOUR_FILE
-				   : (S_ISDIR(status->st_mode)
-						  ? COLOUR_DIR
-						  : (S_ISLNK(status->st_mode) ? YELLOW : WHITE)));
+		struct stat t_stat;
+		case S_IFDIR: strcpy(file->color.str, COLOUR_DIR); break;
+		case S_IFLNK:
+			stat(file->rel_name, &t_stat);
+			if((t_stat.st_mode & S_IFMT) == S_IFDIR)
+			{
+				strcpy(file->color.str, getRGB(111, 255, 164));
+				if(file->icon == DEFAULT_FILE)
+					file->icon = getIcon(file->name, 1);
+			}
+			else if((t_stat.st_mode & S_IFMT) == S_IFREG)
+			{
+				strcpy(file->color.str, getRGB(232, 255, 32));
+				if(file->icon == DEFAULT_FILE)
+					file->icon = getIcon(file->name, 0);
+			}
+			break;
 
-		printf("\t%s%s%s%c",
-			   file->color.str,
-			   file->icon,
-			   file->name,
-			   S_ISDIR(status->st_mode) ? '/' : (S_ISLNK(status->st_mode) ? '*' : ' '));
-		printf("%s", RESET);
+		default: strcpy(file->color.str, COLOUR_FILE);
 	}
-}
 
-char upper(const char c)
-{
-	if(c >= 'a' && c <= 'z')
-		return (c - 32);
-	return c;
+	printf("\t%s%s%s%c",
+		   file->color.str,
+		   file->icon,
+		   file->name,
+		   S_ISDIR(status->st_mode) ? '/' : (S_ISLNK(status->st_mode) ? '*' : ' '));
+	printf("%s", RESET);
 }
 
 char lower(const char c)
@@ -272,6 +280,8 @@ int sortFile(const struct dirent** fir, const struct dirent** sec)
 		return -1;
 	else if((*fir)->d_type != 4 && (*sec)->d_type == 4)
 		return 1;
+	else if((*fir)->d_type == 10)
+		;
 	return strverscmp(to_lower((*fir)->d_name), to_lower((*sec)->d_name));
 }
 

@@ -189,7 +189,6 @@ char* getIcon(char* filename, int is_dir)
 	// Find the last '/' if exists or find last ., go reverse and take it from there
 	const unsigned long num_of_icons = (sizeof(icons) / sizeof(struct Icon));
 	char ext[128];
-	char* icon = malloc(9 * sizeof(char));
 	char* p = rindex(filename, '.');
 	if(p == NULL)
 	{
@@ -207,7 +206,7 @@ char* getIcon(char* filename, int is_dir)
 
 	for(unsigned long i = 0U; i < num_of_icons; ++i)
 		if(!strcmp(icons[i].ext, ext))
-			return strcpy(icon, icons[i].icon);
+			return icons[i].icon;
 
 	return is_dir ? DEFAULT_DIR : DEFAULT_FILE;
 }
