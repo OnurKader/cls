@@ -35,6 +35,8 @@ int sortFile(const struct dirent**, const struct dirent**);
 static int b_all = false, b_long = false, b_human = false, b_color = true,
 		   b_reverse = false;
 
+char* dir = ".";
+
 int main(int argc, char** argv)
 {
 	// TODO finish File struct which wraps dirent and stat / lstat(), modify time stuff,
@@ -44,7 +46,6 @@ int main(int argc, char** argv)
 	// TODO -l option, long listing
 
 	struct dirent** dirs;
-	char* dir = ".";
 	int n_of_dirs;
 	short t_width, t_height;
 	getSize(&t_width, &t_height);
@@ -228,7 +229,11 @@ void printFile(File* file, struct stat* status)
 		struct stat t_stat;
 		case S_IFDIR: strcpy(file->color.str, COLOUR_DIR); break;
 		case S_IFLNK:
-			stat(file->rel_name, &t_stat);
+			if(stat(file->rel_name, &t_stat) == -1)
+			{
+				strcpy(file->color.str, getRGB(255, 144, 16));
+				break;
+			}
 			if((t_stat.st_mode & S_IFMT) == S_IFDIR)
 			{
 				strcpy(file->color.str, getRGB(111, 255, 164));
@@ -276,12 +281,66 @@ char* to_lower(const char str[256])
 int sortFile(const struct dirent** fir, const struct dirent** sec)
 {
 	// 4 for dirs, 8 for reg
-	if((*fir)->d_type == 4 && (*sec)->d_type != 4)
+	if((*fir)->d_type == 4 && (*sec)->d_type == 8)
 		return -1;
-	else if((*fir)->d_type != 4 && (*sec)->d_type == 4)
+	else if((*fir)->d_type == 8 && (*sec)->d_type == 4)
 		return 1;
-	else if((*fir)->d_type == 10)
-		;
+	else if((*fir)->d_type == 10 && (*sec)->d_type != 10)	 // Handling SYMLINKS
+	{
+		struct stat f_stat;
+		char* f_name = malloc(256 * sizeof(char));
+		strcpy(f_name, dir);
+		strcpy(f_name, "/");
+		strcpy(f_name, (*fir)->d_name);
+		stat(f_name, &f_stat);
+		if(S_ISDIR(f_stat.st_mode))
+		{
+			if((*sec)->d_type == 4)
+				goto end;
+			else if((*sec)->d_type == 8)
+				return -1;
+		}
+	}
+	else if((*fir)->d_type != 10 && (*sec)->d_type == 10)
+	{
+		struct stat s_stat;
+		char* s_name = malloc(256 * sizeof(char));
+		strcpy(s_name, dir);
+		strcpy(s_name, "/");
+		strcpy(s_name, (*fir)->d_name);
+		stat(s_name, &s_stat);
+		if(S_ISDIR(s_stat.st_mode))
+		{
+			if((*fir)->d_type == 4)
+				goto end;
+			else if((*fir)->d_type == 8)
+				return 1;
+		}
+	}
+	else if((*fir)->d_type == 10 && (*sec)->d_type == 10)
+	{
+		struct stat f_stat, s_stat;
+		char* f_name = malloc(256 * sizeof(char));
+		char* s_name = malloc(256 * sizeof(char));
+		strcpy(f_name, dir);
+		strcpy(f_name, "/");
+		strcpy(f_name, (*fir)->d_name);
+		strcpy(s_name, dir);
+		strcpy(s_name, "/");
+		strcpy(s_name, (*sec)->d_name);
+		stat(f_name, &f_stat);
+		stat(s_name, &s_stat);
+
+		if((S_ISDIR(f_stat.st_mode) && S_ISDIR(s_stat.st_mode)) ||
+		   (S_ISREG(f_stat.st_mode) && S_ISREG(s_stat.st_mode)))
+			goto end;
+		else if(S_ISDIR(f_stat.st_mode) && !S_ISDIR(s_stat.st_mode))
+			return -1;
+		else if(!S_ISDIR(f_stat.st_mode) && S_ISDIR(s_stat.st_mode))
+			return 1;
+	}
+
+end:
 	return strverscmp(to_lower((*fir)->d_name), to_lower((*sec)->d_name));
 }
 
