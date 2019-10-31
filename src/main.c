@@ -29,21 +29,25 @@ typedef struct
 void usage(void);
 void getSize(short*, short*);
 void printFile(File*, struct stat*);
-char* to_lower(const char[256]);
+void to_lower(const char[256], char[256]);
 int sortFile(const struct dirent**, const struct dirent**);
 
 static int b_all = false, b_long = false, b_human = false, b_color = true,
 		   b_reverse = false;
 
-char* dir = ".";
+char* dir;
 
 int main(int argc, char** argv)
 {
+	dir = calloc(256, sizeof(*dir));
+	strcpy(dir, ".");
 	// TODO finish File struct which wraps dirent and stat / lstat(), modify time stuff,
 	// owners...
 	// TODO Kibi-byte for sizes. Think of a better way to determine 'KGB' rather than an
 	// intense ternary
 	// TODO -l option, long listing
+	// TODO fix empty directory double free
+	// TODO Fix Sort
 
 	struct dirent** dirs;
 	int n_of_dirs;
@@ -64,6 +68,7 @@ int main(int argc, char** argv)
 		reverse = reverse printing order, currently -r but for Recursive Tree printing in
 		the future maybe change to -R
 	*/
+
 	// Get the options and set the necessary flags
 	{
 		opterr = 0;
@@ -107,7 +112,7 @@ int main(int argc, char** argv)
 	}
 
 	if(optind < argc)
-		dir = argv[optind++];
+		strcpy(dir, argv[optind++]);
 
 	n_of_dirs = scandir(dir, &dirs, NULL, sortFile);
 	if(n_of_dirs <= 0)
@@ -266,16 +271,13 @@ char lower(const char c)
 	return c;
 }
 
-char* to_lower(const char str[256])
+void to_lower(const char str[256], char dest[256])
 {
-	char* temp = malloc(256 * sizeof(char));
 	uint8_t i = 0U;
 	do
 	{
-		temp[i++] = lower(*(str));
+		dest[i++] = lower(*(str));
 	} while(*(str++) != '\0');
-
-	return temp;
 }
 
 int sortFile(const struct dirent** fir, const struct dirent** sec)
@@ -340,7 +342,11 @@ int sortFile(const struct dirent** fir, const struct dirent** sec)
 			return 1;
 	}
 
+	char temp1[256];
+	char temp2[256];
 end:
-	return strverscmp(to_lower((*fir)->d_name), to_lower((*sec)->d_name));
+	to_lower((*fir)->d_name, temp1);
+	to_lower((*sec)->d_name, temp2);
+	return strverscmp(temp1, temp2);
 }
 
