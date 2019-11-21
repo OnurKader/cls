@@ -25,6 +25,11 @@ char* getRGB(uint8_t r, uint8_t g, uint8_t b)
 	return buff;
 }
 
+void sgetRGB(char* buff, uint8_t r, uint8_t g, uint8_t b)
+{
+	sprintf(buff, "\033[38;2;%u;%u;%um", r, g, b);
+}
+
 void setGREY(color_t* color, uint8_t g)
 {
 	color->r = color->g = color->b = g;

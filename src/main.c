@@ -143,13 +143,14 @@ int main(int argc, char** argv)
 		uint8_t dotflag = 0U;
 		while(n_of_dirs--)
 		{
-			char* name = malloc(256 * sizeof(char));
+			char* name = malloc(256 * sizeof(*name));
 			strcpy(name, dirs[n_of_dirs]->d_name);
 
 			// Ignore Current and parent dirs.
 			if(dotflag <= 2 && (!strcmp(name, ".") || !strcmp(name, "..")))
 			{
 				++dotflag;
+				free(name);
 				free(dirs[n_of_dirs]);
 				continue;
 			}
@@ -158,8 +159,9 @@ int main(int argc, char** argv)
 				strcpy(v_dirs[num_of_files++].name, name);
 			else
 			{
-				if(name[0] == '.')
+				if(*name == '.')
 				{
+					free(name);
 					free(dirs[n_of_dirs]);
 					continue;
 				}
@@ -168,8 +170,8 @@ int main(int argc, char** argv)
 					strcpy(v_dirs[num_of_files++].name, name);
 				}
 			}
-			free(dirs[n_of_dirs]);
 			free(name);
+			free(dirs[n_of_dirs]);
 		}
 		free(dirs);
 	}
@@ -201,6 +203,7 @@ int main(int argc, char** argv)
 	}
 
 	free(v_dirs);
+	free(dir);
 	return 0;
 }
 
@@ -215,7 +218,7 @@ void usage(void)
 	printf("\t-l, --long\t\tUse a long listing format. Permissions, ownership, size, "
 		   "modify date\n");
 	printf("\t-v, -H, -u, --version, --usage, --help:\tPrint this screen\n");
-	printf("\nVersion:0.1.0\nonurorkunkader1999@gmail.com\nonurkader@protonmail.com\n");
+	printf("\nVersion:0.1.0\nonurorkunkader1999@gmail.com\nonurorkunkader@hotmail.com\n");
 	exit(1);
 }
 
@@ -236,18 +239,18 @@ void printFile(File* file, struct stat* status)
 		case S_IFLNK:
 			if(stat(file->rel_name, &t_stat) == -1)
 			{
-				strcpy(file->color.str, getRGB(255, 144, 16));
+				sgetRGB(file->color.str, 255, 144, 16);
 				break;
 			}
 			if((t_stat.st_mode & S_IFMT) == S_IFDIR)
 			{
-				strcpy(file->color.str, getRGB(111, 255, 164));
+				sgetRGB(file->color.str, 111, 255, 164);
 				if(file->icon == DEFAULT_FILE)
 					file->icon = getIcon(file->name, 1);
 			}
 			else if((t_stat.st_mode & S_IFMT) == S_IFREG)
 			{
-				strcpy(file->color.str, getRGB(232, 255, 32));
+				sgetRGB(file->color.str, 232, 255, 32);
 				if(file->icon == DEFAULT_FILE)
 					file->icon = getIcon(file->name, 0);
 			}
