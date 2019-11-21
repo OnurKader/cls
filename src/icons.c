@@ -16,6 +16,7 @@ struct Icon icons[] = {
 	// Programming
 	{"Android", "\ue70e "},
 	{"android", "\ue70e "},
+	{"Atom", "\ue764 "},
 	{"atom", "\ue764 "},
 	{"C", "\ue61e "},
 	{"C#", "\uf81a "},

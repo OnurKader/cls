@@ -1,5 +1,5 @@
 #define _GNU_SOURCE
-#include "colour.c"
+#include "color.c"
 #include "icons.c"
 
 #include <dirent.h>
@@ -283,70 +283,17 @@ void to_lower(const char str[256], char dest[256])
 int sortFile(const struct dirent** fir, const struct dirent** sec)
 {
 	// 4 for dirs, 8 for reg
-	if((*fir)->d_type == 4 && (*sec)->d_type == 8)
+	if((*fir)->d_type == 4 && ((*sec)->d_type == 8 || (*sec)->d_type == 10))
 		return -1;
-	else if((*fir)->d_type == 8 && (*sec)->d_type == 4)
+	else if(((*fir)->d_type == 8 || (*fir)->d_type == 10) && (*sec)->d_type == 4)
 		return 1;
-	else if((*fir)->d_type == 10 && (*sec)->d_type != 10)	 // Handling SYMLINKS
+	else
 	{
-		struct stat f_stat;
-		char* f_name = malloc(256 * sizeof(char));
-		strcpy(f_name, dir);
-		strcpy(f_name, "/");
-		strcpy(f_name, (*fir)->d_name);
-		stat(f_name, &f_stat);
-		if(S_ISDIR(f_stat.st_mode))
-		{
-			if((*sec)->d_type == 4)
-				goto end;
-			else if((*sec)->d_type == 8)
-				return -1;
-		}
+		char temp1[256];
+		char temp2[256];
+		to_lower((*fir)->d_name, temp1);
+		to_lower((*sec)->d_name, temp2);
+		return strverscmp(temp1, temp2);
 	}
-	else if((*fir)->d_type != 10 && (*sec)->d_type == 10)
-	{
-		struct stat s_stat;
-		char* s_name = malloc(256 * sizeof(char));
-		strcpy(s_name, dir);
-		strcpy(s_name, "/");
-		strcpy(s_name, (*fir)->d_name);
-		stat(s_name, &s_stat);
-		if(S_ISDIR(s_stat.st_mode))
-		{
-			if((*fir)->d_type == 4)
-				goto end;
-			else if((*fir)->d_type == 8)
-				return 1;
-		}
-	}
-	else if((*fir)->d_type == 10 && (*sec)->d_type == 10)
-	{
-		struct stat f_stat, s_stat;
-		char* f_name = malloc(256 * sizeof(char));
-		char* s_name = malloc(256 * sizeof(char));
-		strcpy(f_name, dir);
-		strcpy(f_name, "/");
-		strcpy(f_name, (*fir)->d_name);
-		strcpy(s_name, dir);
-		strcpy(s_name, "/");
-		strcpy(s_name, (*sec)->d_name);
-		stat(f_name, &f_stat);
-		stat(s_name, &s_stat);
-
-		if((S_ISDIR(f_stat.st_mode) && S_ISDIR(s_stat.st_mode)) ||
-		   (S_ISREG(f_stat.st_mode) && S_ISREG(s_stat.st_mode)))
-			goto end;
-		else if(S_ISDIR(f_stat.st_mode) && !S_ISDIR(s_stat.st_mode))
-			return -1;
-		else if(!S_ISDIR(f_stat.st_mode) && S_ISDIR(s_stat.st_mode))
-			return 1;
-	}
-
-	char temp1[256];
-	char temp2[256];
-end:
-	to_lower((*fir)->d_name, temp1);
-	to_lower((*sec)->d_name, temp2);
-	return strverscmp(temp1, temp2);
 }
 
