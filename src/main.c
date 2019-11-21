@@ -34,7 +34,6 @@ int sortFile(const struct dirent**, const struct dirent**);
 
 static int b_all = false, b_long = false, b_human = false, b_color = true,
 		   b_reverse = false;
-
 char* dir;
 
 int main(int argc, char** argv)
@@ -46,8 +45,7 @@ int main(int argc, char** argv)
 	// TODO Kibi-byte for sizes. Think of a better way to determine 'KGB' rather than an
 	// intense ternary
 	// TODO -l option, long listing
-	// TODO fix empty directory double free
-	// TODO Fix Sort
+	// TODO add reverse sorting, just sort normally then reverse probably.
 
 	struct dirent** dirs;
 	int n_of_dirs;
@@ -180,6 +178,16 @@ int main(int argc, char** argv)
 		File* temp = realloc(v_dirs, num_of_files * sizeof(File));
 		if(temp != NULL)
 			v_dirs = temp;
+		else
+		{
+			char* buff = malloc(24 * sizeof(*buff));
+			sgetRGB(buff, 229, 195, 38);
+			fprintf(stderr, "\t%sNothing to show here...\n%s", buff, RESET);
+			free(buff);
+			free(temp);
+			free(dir);
+			return 0;
+		}
 	}
 
 	for(int i = num_of_files - 1; i >= 0; --i)
