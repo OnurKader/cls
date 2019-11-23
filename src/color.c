@@ -1,5 +1,5 @@
-#ifndef COLOUR_C
-#define COLOUR_C
+#ifndef COLOR_C
+#define COLOR_C
 
 #include <stdint.h>
 #include <stdio.h>
@@ -55,6 +55,6 @@ static const char RESET[] = "\033[m", BLACK[] = "\033[38;2;0;0;0m",
 				  YELLOW[] = "\033[38;2;255;255;0m", MAGENTA[] = "\033[38;2;255;0;255m",
 				  CYAN[] = "\033[38;0;2;255;255m", PURPLE[] = "\033[38;2;127;32;183m",
 				  LIME[] = "\033[38;2;111;255;8m", BROWN[] = "\033[38;2;142;69;23m",
-				  ORANGE[] = "\033[38;2;255;127;8m", COLOUR_FILE[] = "\033[38;2;8;255;12m",
-				  COLOUR_DIR[] = "\033[38;2;21;162;252m";
+				  ORANGE[] = "\033[38;2;255;127;8m", COLOR_FILE[] = "\033[38;2;8;255;12m",
+				  COLOR_DIR[] = "\033[38;2;21;162;252m";
 #endif
