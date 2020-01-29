@@ -35,7 +35,7 @@ void humanReadableSize(const uint64_t, char*);
 uint8_t getColNum(const uint64_t, const short);
 static int b_all = false, b_long = false, b_human = false, b_color = true,
 		   b_reverse = false;
-char* dir;
+char* dir = NULL;
 
 int main(int argc, char** argv)
 {
@@ -328,13 +328,13 @@ char lower(const char c)
 }
 
 // Fuck different Locales right? UTF-8 who?!
-void toLower(const char str[256], char dest[256])
+void toLower(const char src[256], char dest[256])
 {
 	uint8_t i = 0U;
 	do
 	{
-		dest[i++] = lower(*(str));
-	} while(*(str++) != '\0');
+		dest[i++] = lower(*(src));
+	} while(*(src++) != '\0');
 }
 
 // I really want to change the "else" to sort 'Links -> Dirs' with other dirs.
@@ -369,5 +369,6 @@ void humanReadableSize(uint64_t size, char* dest)
 
 uint8_t getColNum(const uint64_t total_strlen, const short term_width)
 {
-	return 1U + (total_strlen / term_width);
+	return 1U + (total_strlen / (1 + term_width));
 }
+
