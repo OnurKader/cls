@@ -18,8 +18,8 @@
 
 typedef struct File
 {
-	char name[256];
-	char rel_name[256];
+	char name[257];
+	char rel_name[257];
 	size_t size;
 	char* icon;
 	color_t color;
@@ -29,7 +29,7 @@ typedef struct File
 void usage(void);
 void getSize(short*, short*);
 void printFile(File*, const struct stat*, char*);
-void toLower(const char[256], char[256]);
+void toLower(const char[257], char[257]);
 void printFileNewline(File*, const struct stat*, char*);
 int sortFile(const struct dirent**, const struct dirent**);
 void humanReadableSize(const uint64_t, char*);
@@ -153,11 +153,11 @@ int main(int argc, char** argv)
 		uint8_t dotflag = 0U;
 		while(n_of_dirs--)
 		{
-			char* name = malloc(256 * sizeof(*name));
+			char* name = calloc(256 + 1, sizeof(*name));
 			strcpy(name, dirs[n_of_dirs]->d_name);
 
 			// Ignore Current and parent dirs.
-			if(dotflag <= 2 && (!strcmp(name, ".") || !strcmp(name, "..")))
+			if(dotflag < 2 && (!strcmp(name, ".") || !strcmp(name, "..")))
 			{
 				++dotflag;
 				free(name);
@@ -194,7 +194,7 @@ int main(int argc, char** argv)
 			v_dirs = temp;
 		else
 		{
-			char* buff = malloc(24 * sizeof(*buff));
+			char* buff = calloc(27, sizeof(*buff));
 			sgetRGB(buff, 229, 195, 38);
 			fprintf(stderr, "\t%sNothing to show here...\n%s", buff, RESET);
 			free(buff);
@@ -206,7 +206,7 @@ int main(int argc, char** argv)
 
 	for(int i = num_of_files - 1; i >= 0; --i)
 	{
-		char* name = malloc(256 * sizeof(char));
+		char* name = calloc(256 + 1, sizeof(char));
 		strcpy(name, dir);
 		strcat(name, "/");
 		strcat(name, v_dirs[i].name);
@@ -223,7 +223,7 @@ int main(int argc, char** argv)
 		total_file_size += status.st_size;
 		file.icon = getIcon(file.name, S_ISDIR(status.st_mode));
 		free(name);
-		char* output_buffer = calloc(256, sizeof(*output_buffer));
+		char* output_buffer = calloc(256 + 1, sizeof(*output_buffer));
 		printFile(&file, &status, output_buffer);
 		total_file_width +=
 			4 +	   // 4 because the initial space and the minimum between 2
@@ -231,7 +231,7 @@ int main(int argc, char** argv)
 			strlen(file.name) +
 			3UL;	// +3 because icon + space after icon and the classification (*, /, ' ')
 		/* strcpy(file.name, output_buffer); */
-		strcpy(v_dirs[i].name, output_buffer);
+		/* strcpy(v_dirs[i].name, output_buffer); */
 		// Decide what to do here!
 		if(b_one_line)
 			printf("\t%s\n", output_buffer);
@@ -318,7 +318,7 @@ char lower(const char c)
 }
 
 // Fuck different Locales right? UTF-8 who?!
-void toLower(const char src[256], char dest[256])
+void toLower(const char src[257], char dest[257])
 {
 	uint8_t i = 0U;
 	do
@@ -337,8 +337,8 @@ int sortFile(const struct dirent** fir, const struct dirent** sec)
 		return 1;
 	else
 	{
-		char temp1[256];
-		char temp2[256];
+		char temp1[257];
+		char temp2[257];
 		toLower((*fir)->d_name, temp1);
 		toLower((*sec)->d_name, temp2);
 		return strverscmp(temp1, temp2);
