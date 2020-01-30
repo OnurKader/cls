@@ -49,7 +49,7 @@ void setStr(color_t* color)
 	sprintf(color->str, "\033[38;2;%u;%u;%um", color->r, color->g, color->b);
 }
 
-static const char RESET[] = "\033[m", BLACK[] = "\033[38;2;0;0;0m",
+static const char RESET[] = "\033[m\033[38m\033[48m", BLACK[] = "\033[38;2;0;0;0m",
 				  WHITE[] = "\033[38;2;255;255;255m", RED[] = "\033[38;2;255;0;0m",
 				  GREEN[] = "\033[38;2;0;255;0m", BLUE[] = "\033[38;2;0;0;255m",
 				  YELLOW[] = "\033[38;2;255;255;0m", MAGENTA[] = "\033[38;2;255;0;255m",

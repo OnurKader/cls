@@ -28,11 +28,13 @@ typedef struct File
 
 void usage(void);
 void getSize(short*, short*);
-void printFile(File*, struct stat*, char*);
+void printFile(File*, const struct stat*, char*);
 void toLower(const char[256], char[256]);
+void printFileNewline(File*, const struct stat*, char*);
 int sortFile(const struct dirent**, const struct dirent**);
 void humanReadableSize(const uint64_t, char*);
 uint8_t getColNum(const uint64_t, const short);
+
 static int b_all = false, b_long = false, b_human = false, b_color = true,
 		   b_reverse = false, b_one_line = false;
 char* dir = NULL;
@@ -125,7 +127,7 @@ int main(int argc, char** argv)
 	{
 		if(errno == ENOENT)
 		{
-			fprintf(stderr, "\t\033[1;31mDirectory Not Found.\033[m\n");
+			fprintf(stderr, "\t\033[1;31mDirectory or File not found%s\n", RESET);
 			return 1;
 		}
 		else if(errno == ENOTDIR)
@@ -135,10 +137,10 @@ int main(int argc, char** argv)
 			File file;
 			strcpy(file.name, dir);
 			file.icon = getIcon(file.name, 0);
-			char* output_buffer = malloc(256 * sizeof(*output_buffer));
-			printFile(&file, &status, output_buffer);
-			printf("%s\n", output_buffer);
-			free(output_buffer);
+			char* output_buffer = calloc(256 + 1, sizeof(*output_buffer));
+
+			// Print the filename if `cls` is run on a file
+			printFileNewline(&file, &status, output_buffer);
 		}
 		return 0;
 	}
@@ -221,7 +223,7 @@ int main(int argc, char** argv)
 		total_file_size += status.st_size;
 		file.icon = getIcon(file.name, S_ISDIR(status.st_mode));
 		free(name);
-		char* output_buffer = malloc(256 * sizeof(*output_buffer));
+		char* output_buffer = calloc(256, sizeof(*output_buffer));
 		printFile(&file, &status, output_buffer);
 		total_file_width +=
 			4 +	   // 4 because the initial space and the minimum between 2
@@ -231,34 +233,17 @@ int main(int argc, char** argv)
 		/* strcpy(file.name, output_buffer); */
 		strcpy(v_dirs[i].name, output_buffer);
 		// Decide what to do here!
-		printf("\t%s\n", output_buffer);
+		if(b_one_line)
+			printf("\t%s\n", output_buffer);
+		else
+			printf("\t%s\t", output_buffer);
 
 		free(output_buffer);
 	}
-	printf("\n");
 
-	const uint8_t num_of_cols = getColNum(total_file_width, t_width);
-	if(num_of_cols == 1)	// Can fit in one column
-		for(int index = 0; index < num_of_files; ++index)
-		{
-			int rindex = num_of_files - 1 - index;
-			printf("    %s", v_dirs[rindex].name);
-		}
-	else	// More than one row FUCK NAMING, it's not num_of_cols!!!! TODO FIXME
-	{
-		for(int index = 0; index < num_of_files; ++index)
-		{
-			int rindex = num_of_files - 1 - index;
-			if(index % num_of_cols == 0)
-				printf("    %s", v_dirs[rindex].name);
-		}
-	}
-	printf("\n");
+	if(!b_one_line)
+		printf("\n");
 
-	printf("Total_Len: %lu\nTerm_Width: %d\nNo of cols: %u\n",
-		   total_file_width,
-		   t_width,
-		   num_of_cols);
 	free(v_dirs);
 	free(dir);
 	return 0;
@@ -275,7 +260,7 @@ void usage(void)
 	printf("\t-l, --long\t\tUse a long listing format. Permissions, ownership, size, "
 		   "modify date\n");
 	printf("\t-v, -H, -u, --version, --usage, --help:\tPrint this screen\n");
-	printf("\nVersion:0.1.0\nonurorkunkader1999@gmail.com\nonurorkunkader@hotmail.com\n");
+	printf("\nVersion:0.1.1\nonurorkunkader1999@gmail.com\nonurorkunkader@hotmail.com\n");
 	exit(1);
 }
 
@@ -287,7 +272,7 @@ void getSize(short* w, short* h)
 	*h = size.ws_row;
 }
 
-void printFile(File* file, struct stat* status, char* buff)
+void printFile(File* file, const struct stat* status, char* buff)
 {
 	switch(status->st_mode & S_IFMT)
 	{
@@ -375,5 +360,12 @@ void humanReadableSize(uint64_t size, char* dest)
 uint8_t getColNum(const uint64_t total_strlen, const short term_width)
 {
 	return 1U + (total_strlen / (1 + term_width));
+}
+
+void printFileNewline(File* file, const struct stat* status, char* output_buffer)
+{
+	printFile(file, status, output_buffer);
+	printf("\t%s\n", output_buffer);
+	free(output_buffer);
 }
 
