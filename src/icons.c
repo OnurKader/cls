@@ -63,7 +63,8 @@ struct Icon icons[] = {
 	{"yaml", "\ue73e "},
 	{"yml", "\ue73e "},
 	{"vscode", "\ufb0f "},
-	{"wine", "🍷"},
+	/* {"wine", "🍷"}, */
+	{"wine", "\uf7a7 "},
 	// Vim
 	{"nvim", "\ue62b "},
 	{"vi", "\ue62b "},

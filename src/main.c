@@ -80,15 +80,15 @@ int main(int argc, char** argv)
 	{
 		opterr = 0;
 		int opt;
-		static struct option long_options[] = {{"all", no_argument, &b_all, 1},
-											   {"long", no_argument, &b_long, 1},
-											   {"human", no_argument, &b_human, 1},
-											   {"no-color", no_argument, &b_color, 0},
-											   {"version", no_argument, 0, 'v'},
-											   {"help", no_argument, 0, 'H'},
-											   {"usage", no_argument, 0, 'u'},
-											   {"reverse", no_argument, 0, 'r'},
-											   {"one-line", no_argument, 0, '1'},
+		static struct option long_options[] = {{"all", no_argument, &b_all, true},
+											   {"long", no_argument, &b_long, true},
+											   {"human", no_argument, &b_human, true},
+											   {"no-color", no_argument, &b_color, true},
+											   {"version", no_argument, 0, true},
+											   {"help", no_argument, 0, true},
+											   {"usage", no_argument, 0, true},
+											   {"reverse", no_argument, &b_reverse, true},
+											   {"one-line", no_argument, &b_one_line, true},
 											   {0, 0, 0, 0}};
 		while(true)
 		{
