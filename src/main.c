@@ -16,7 +16,7 @@
 #include <time.h>
 #include <unistd.h>
 
-typedef struct
+typedef struct File
 {
 	char name[256];
 	char rel_name[256];
@@ -41,8 +41,11 @@ int main(int argc, char** argv)
 {
 	uint64_t total_file_size = 0ULL;
 	uint64_t total_file_width = 4ULL;	 // Initial TAB
-	dir = calloc(256, sizeof(*dir));
+	// 257 because the longest legal filename is 256 on *NIX?, maybe just Linux haven't
+	// checked the others. I mean I'm compiling with gnu11 so yeah...
+	dir = calloc(256U + 1U, sizeof(*dir));
 	strcpy(dir, ".");
+
 	// TODO -l option, long listing
 	// TODO finish File struct which wraps dirent and stat / lstat(), modify time stuff,
 	// owners...
@@ -291,12 +294,12 @@ void printFile(File* file, struct stat* status, char* buff)
 		case S_IFLNK:
 			if(stat(file->rel_name, &t_stat) == -1)
 			{
-				sgetRGB(file->color.str, 255, 144, 16);
+				sgetRGB(file->color.str, 255, 128, 16);
 				break;
 			}
 			if((t_stat.st_mode & S_IFMT) == S_IFDIR)
 			{
-				sgetRGB(file->color.str, 111, 255, 164);
+				sgetRGB(file->color.str, 100, 255, 164);
 				if(file->icon == DEFAULT_FILE)
 					file->icon = getIcon(file->name, 1);
 			}
