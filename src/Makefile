@@ -10,9 +10,9 @@ all: clean cls
 clean:
 	rm -f ../bin/*
 
-cls:
-	$(CC) -o ../bin/cls main.c $(CFLAGS) $(LIBS)
+cls: main.c color.c icons.c
+	mkdir -p ../bin && $(CC) -o ../bin/cls main.c $(CFLAGS) $(LIBS)
 
 install: ../bin/cls
-	mkdir -p $(INSTALL_PATH)/bin && cp /home/beronthecolossus/Peki/C/Projects/cls/bin/cls $(INSTALL_PATH)/bin/cls
+	mkdir -p $(INSTALL_PATH)/bin && cp ../bin/cls $(INSTALL_PATH)/bin/cls
 
