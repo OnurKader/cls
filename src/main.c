@@ -34,7 +34,7 @@ int sortFile(const struct dirent**, const struct dirent**);
 void humanReadableSize(const uint64_t, char*);
 uint8_t getColNum(const uint64_t, const short);
 static int b_all = false, b_long = false, b_human = false, b_color = true,
-		   b_reverse = false;
+		   b_reverse = false, b_one_line = false;
 char* dir = NULL;
 
 int main(int argc, char** argv)
@@ -86,30 +86,32 @@ int main(int argc, char** argv)
 											   {"help", no_argument, 0, 'H'},
 											   {"usage", no_argument, 0, 'u'},
 											   {"reverse", no_argument, 0, 'r'},
+											   {"one-line", no_argument, 0, '1'},
 											   {0, 0, 0, 0}};
 		while(true)
 		{
 			int opt_index = 0;
-			opt = getopt_long(argc, argv, "alhCHvur", long_options, &opt_index);
+			opt = getopt_long(argc, argv, "alhCHvur1", long_options, &opt_index);
 			if(opt == -1)
 				break;
 
 			switch(opt)
 			{
-				case 'a': b_all = 1; break;
-				case 'l': b_long = 1; break;
-				case 'h': b_human = 1; break;
-				case 'C': b_color = 0; break;
+				case 'a': b_all = true; break;
+				case 'l': b_long = true; break;
+				case 'h': b_human = true; break;
+				case 'C': b_color = false; break;
 				case 'H':
 				case 'v':
 				case 'u': usage(); break;
-				case 'r': b_reverse = 1; break;
+				case 'r': b_reverse = true; break;
+				case '1': b_one_line = true; break;
 				case 0:
 					if(long_options[opt_index].flag != 0)
 						break;
 					printf("option %s\n", long_options[opt_index].name);
 					break;
-				case '?': break;
+				case '?': usage(); break;
 				default: abort();
 			}
 		}
