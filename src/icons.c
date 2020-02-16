@@ -108,6 +108,13 @@ struct Icon icons[] = {
 	{"tiff", "\ue60d "},
 	{"tif", "\ue60d "},
 	{"xcf", "\uf71e "},
+	// Fonts (?)
+	{"ttf", "\uf031 "},
+	{"eot", "\uf031 "},
+	{"otf", "\uf031 "},
+	{"woff", "\uf031 "},
+	{"font", "\uf031 "},
+	{"fonts", "\uf031 "},
 	// System Stuff
 	{"bak", "\ue615 "},
 	{"bashrc", "\ue615 "},
@@ -119,8 +126,6 @@ struct Icon icons[] = {
 	{"dll", "\uf830 "},
 	{"firefox", "\ue745 "},
 	{"exe", "\ufab2"},
-	{"font", "\uf031 "},
-	{"fonts", "\uf031 "},
 	{"inf", "\uf7fc "},
 	{"info", "\uf7fc "},
 	{"ico", "\uf6f2 "},
