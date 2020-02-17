@@ -1,4 +1,5 @@
 #define _GNU_SOURCE
+
 #include "color.c"
 #include "icons.c"
 
@@ -32,7 +33,7 @@ void printFile(File*, const struct stat*, char*);
 void toLower(const char[256], char[256]);
 void printFileNewline(File*, const struct stat*, char*);
 int sortFile(const struct dirent**, const struct dirent**);
-void humanReadableSize(const uint64_t, char*);
+void humanReadableSize(const uint64_t, char*, const bool);
 uint8_t getColNum(const uint64_t, const short);
 
 static int b_all = false, b_long = false, b_human = false, b_color = true,
@@ -127,7 +128,7 @@ int main(int argc, char** argv)
 	{
 		if(errno == ENOENT)
 		{
-			fprintf(stderr, "\t\033[1;31mDirectory or File not found%s\n", RESET);
+			fprintf(stderr, "\t\033[1;31mFile or Directory not found%s\n", RESET);
 			return 1;
 		}
 		else if(errno == ENOTDIR)
@@ -349,14 +350,15 @@ int sortFile(const struct dirent** fir, const struct dirent** sec)
 	}
 }
 
-void humanReadableSize(uint64_t size, char* dest)
+void humanReadableSize(uint64_t size, char* dest, const bool kibi)
 {
 	const char exts[] = {'B', 'K', 'M', 'G'};
 	uint8_t i = 0U;
-	while(size > 1000UL)
+	uint64_t divisor = kibi ? 1024UL : 1000UL;
+	while(size > divisor)
 	{
 		++i;
-		size /= 1000UL;
+		size /= divisor;
 	}
 	sprintf(dest, "%lu%c", size, exts[i]);
 }
