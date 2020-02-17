@@ -18,8 +18,8 @@
 
 typedef struct File
 {
-	char name[257];
-	char rel_name[257];
+	char name[256];
+	char rel_name[256];
 	size_t size;
 	char* icon;
 	color_t color;
@@ -29,7 +29,7 @@ typedef struct File
 void usage(void);
 void getSize(short*, short*);
 void printFile(File*, const struct stat*, char*);
-void toLower(const char[257], char[257]);
+void toLower(const char[256], char[256]);
 void printFileNewline(File*, const struct stat*, char*);
 int sortFile(const struct dirent**, const struct dirent**);
 void humanReadableSize(const uint64_t, char*);
@@ -43,16 +43,16 @@ int main(int argc, char** argv)
 {
 	uint64_t total_file_size = 0ULL;
 	uint64_t total_file_width = 4ULL;	 // Initial TAB
-	// 257 because the longest legal filename is 256 on *NIX?, maybe just Linux haven't
-	// checked the others. I mean I'm compiling with gnu11 so yeah...
-	dir = calloc(256U + 1U, sizeof(*dir));
+	// 256 because the longest legal filename is 256 on *NIX?, maybe just Linux
+	// haven't checked the others. I mean I'm compiling with gnu11 so yeah...
+	dir = calloc(256U, sizeof(*dir));
 	strcpy(dir, ".");
 
 	// TODO -l option, long listing
-	// TODO finish File struct which wraps dirent and stat / lstat(), modify time stuff,
-	// owners...
-	// TODO Kibi-byte for sizes. Think of a better way to determine 'KGB' rather than an
-	// intense ternary
+	// TODO finish File struct which wraps dirent and stat / lstat(), modify
+	// time stuff, owners...
+	// TODO Kibi-byte for sizes. Think of a better way to determine 'KGB' rather
+	// than an intense ternary
 	// TODO add reverse sorting, just sort normally then reverse probably.
 	// TODO Column division
 
@@ -68,12 +68,12 @@ int main(int argc, char** argv)
 
 		human_readable = Shorten sizes to Metric system, 'KGBM'.
 
-		color = by default on, colorful version. Maybe set it in color struct? Or functions
-		for color so it returns an empty string
+		color = by default on, colorful version. Maybe set it in color struct?
+	   Or functions for color so it returns an empty string
 		// TODO add no color option
 
-		reverse = reverse printing order, currently -r but for Recursive Tree printing in
-		the future maybe change to -R
+		reverse = reverse printing order, currently -r but for Recursive Tree
+	   printing in the future maybe change to -R
 	*/
 
 	// Get the options and set the necessary flags
@@ -137,7 +137,7 @@ int main(int argc, char** argv)
 			File file;
 			strcpy(file.name, dir);
 			file.icon = getIcon(file.name, 0);
-			char* output_buffer = calloc(256 + 1, sizeof(*output_buffer));
+			char* output_buffer = calloc(256, sizeof(*output_buffer));
 
 			// Print the filename if `cls` is run on a file
 			printFileNewline(&file, &status, output_buffer);
@@ -153,7 +153,7 @@ int main(int argc, char** argv)
 		uint8_t dotflag = 0U;
 		while(n_of_dirs--)
 		{
-			char* name = calloc(256 + 1, sizeof(*name));
+			char* name = calloc(256, sizeof(*name));
 			strcpy(name, dirs[n_of_dirs]->d_name);
 
 			// Ignore Current and parent dirs.
@@ -187,8 +187,8 @@ int main(int argc, char** argv)
 	}
 
 	{
-		// Resize file array. Even if -a isn't given we iterate over every file, .dotfiles
-		// included.
+		// Resize file array. Even if -a isn't given we iterate over every file,
+		// .dotfiles included.
 		File* temp = realloc(v_dirs, num_of_files * sizeof(File));
 		if(temp != NULL)
 			v_dirs = temp;
@@ -206,12 +206,12 @@ int main(int argc, char** argv)
 
 	for(int i = num_of_files - 1; i >= 0; --i)
 	{
-		char* name = calloc(256 + 1, sizeof(char));
+		char* name = calloc(256, sizeof(char));
 		strcpy(name, dir);
 		strcat(name, "/");
 		strcat(name, v_dirs[i].name);
-		// We add `dir`+/ so if we do cls .., it'll work properly. Using relative paths
-		// I might've change directories, but whatever.
+		// We add `dir`+/ so if we do cls .., it'll work properly. Using
+		// relative paths I might've change directories, but whatever.
 
 		struct stat status;
 		lstat(name, &status);	 // lstat doesn't follow links, stat does.
@@ -223,13 +223,13 @@ int main(int argc, char** argv)
 		total_file_size += status.st_size;
 		file.icon = getIcon(file.name, S_ISDIR(status.st_mode));
 		free(name);
-		char* output_buffer = calloc(256 + 1, sizeof(*output_buffer));
+		char* output_buffer = calloc(256, sizeof(*output_buffer));
 		printFile(&file, &status, output_buffer);
-		total_file_width +=
-			4 +	   // 4 because the initial space and the minimum between 2
-				   // strings is 4 spaces / 1 tab
-			strlen(file.name) +
-			3UL;	// +3 because icon + space after icon and the classification (*, /, ' ')
+		total_file_width += 4 +	   // 4 because the initial space and the minimum between 2
+								   // strings is 4 spaces / 1 tab
+							strlen(file.name) +
+							3UL;	// +3 because icon + space after icon
+									// and the classification (*, /, ' ')
 		/* strcpy(file.name, output_buffer); */
 		/* strcpy(v_dirs[i].name, output_buffer); */
 		// Decide what to do here!
@@ -254,13 +254,17 @@ int main(int argc, char** argv)
 void usage(void)
 {
 	printf("Usage: `cls [OPTIONS] [PATH?]`\tOrdering doesn't matter\n");
-	printf("\n\t-a, --all\t\tShow files which start with . (dotfiles). Doesn't print '.' "
+	printf("\n\t-a, --all\t\tShow files which start with . (dotfiles). Doesn't "
+		   "print '.' "
 		   "& '..'\n");
-	printf("\t-h, --human\t\tPrint file sizes in a human readable format (1024B=1K)\n");
-	printf("\t-l, --long\t\tUse a long listing format. Permissions, ownership, size, "
+	printf("\t-h, --human\t\tPrint file sizes in a human readable format "
+		   "(1024B=1K)\n");
+	printf("\t-l, --long\t\tUse a long listing format. Permissions, ownership, "
+		   "size, "
 		   "modify date\n");
 	printf("\t-v, -H, -u, --version, --usage, --help:\tPrint this screen\n");
-	printf("\nVersion:0.1.1\nonurorkunkader1999@gmail.com\nonurorkunkader@hotmail.com\n");
+	printf("\nVersion:0.1.1\nonurorkunkader1999@gmail.com\nonurorkunkader@"
+		   "hotmail.com\n");
 	exit(1);
 }
 
@@ -318,7 +322,7 @@ char lower(const char c)
 }
 
 // Fuck different Locales right? UTF-8 who?!
-void toLower(const char src[257], char dest[257])
+void toLower(const char src[256], char dest[256])
 {
 	uint8_t i = 0U;
 	do
@@ -337,8 +341,8 @@ int sortFile(const struct dirent** fir, const struct dirent** sec)
 		return 1;
 	else
 	{
-		char temp1[257];
-		char temp2[257];
+		char temp1[256];
+		char temp2[256];
 		toLower((*fir)->d_name, temp1);
 		toLower((*sec)->d_name, temp2);
 		return strverscmp(temp1, temp2);
@@ -368,4 +372,3 @@ void printFileNewline(File* file, const struct stat* status, char* output_buffer
 	printf("\t%s\n", output_buffer);
 	free(output_buffer);
 }
-
