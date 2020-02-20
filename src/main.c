@@ -24,6 +24,10 @@ typedef struct File
 	size_t size;
 	char* icon;
 	color_t color;
+	char* user_name;
+	size_t user_name_length;
+	char* group_name;
+	size_t group_name_length;
 	time_t modify;
 } File;
 
@@ -35,6 +39,8 @@ void printFileNewline(File*, const struct stat*, char*);
 int sortFile(const struct dirent**, const struct dirent**);
 void humanReadableSize(const uint64_t, char*, const bool);
 uint8_t getColNum(const uint64_t, const short);
+void getUserName(File*);
+void getGroupName(File*);
 
 static int b_all = false, b_long = false, b_human = false, b_color = true,
 		   b_reverse = false, b_one_line = false;
@@ -233,7 +239,7 @@ int main(int argc, char** argv)
 									// and the classification (*, /, ' ')
 		/* strcpy(file.name, output_buffer); */
 		/* strcpy(v_dirs[i].name, output_buffer); */
-		// Decide what to do here!
+		// TODO Decide what to do here!
 		if(b_one_line)
 			printf("\t%s\n", output_buffer);
 		else
@@ -373,4 +379,32 @@ void printFileNewline(File* file, const struct stat* status, char* output_buffer
 	printFile(file, status, output_buffer);
 	printf("\t%s\n", output_buffer);
 	free(output_buffer);
+}
+
+void getUserName(File* file)
+{
+	file->user_name_length = sysconf(_SC_GETPW_R_SIZE_MAX);
+	if(file->user_name_length == -1)
+		file->user_name_length = 256U;
+	file->user_name = calloc(1, file->user_name_length);
+	if(!file->user_name)
+	{
+		fprintf(stderr, "Couldn't MALLOC!\n");
+		exit(1);
+	}
+	strcpy(file->user_name, getpwuid(geteuid())->pw_name);
+}
+
+void getGroupName(File* file)
+{
+	file->group_name_length = sysconf(_SC_GETGR_R_SIZE_MAX);
+	if(file->group_name_length == -1)
+		file->group_name_length = 256U;
+	file->group_name = calloc(1, file->group_name_length);
+	if(!file->group_name)
+	{
+		fprintf(stderr, "Couldn't MALLOC!\n");
+		exit(1);
+	}
+	strcpy(file->group_name, getgrgid(geteuid())->gr_name);
 }
