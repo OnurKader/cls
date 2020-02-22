@@ -1,4 +1,6 @@
-#define _GNU_SOURCE
+#if defined(__GNUC__)
+#	define _GNU_SOURCE
+#endif
 
 #include "color.c"
 #include "icons.c"
@@ -25,9 +27,9 @@ typedef struct File
 	char* icon;
 	color_t color;
 	char* user_name;
-	size_t user_name_length;
+	ssize_t user_name_length;
 	char* group_name;
-	size_t group_name_length;
+	ssize_t group_name_length;
 	time_t modify;
 } File;
 
@@ -44,7 +46,7 @@ void getGroupName(File*);
 
 static int b_all = false, b_long = false, b_human = false, b_color = true,
 		   b_reverse = false, b_one_line = false;
-char* dir = NULL;
+char dir[256];
 
 int main(int argc, char** argv)
 {
@@ -52,19 +54,19 @@ int main(int argc, char** argv)
 	uint64_t total_file_width = 4ULL;	 // Initial TAB
 	// 256 because the longest legal filename is 256 on *NIX?, maybe just Linux
 	// haven't checked the others. I mean I'm compiling with gnu11 so yeah...
-	dir = calloc(256U, sizeof(*dir));
 	strcpy(dir, ".");
 
 	// TODO -l option, long listing
 	// TODO finish File struct which wraps dirent and stat / lstat(), modify
 	// time stuff, owners...
-	// TODO Kibi-byte for sizes. Think of a better way to determine 'KGB' rather
-	// than an intense ternary
 	// TODO add reverse sorting, just sort normally then reverse probably.
 	// TODO Column division
 
 	struct dirent** dirs;
-	int n_of_dirs;
+	int n_of_dirs = 0;
+
+	// Get the current terminal size
+	// No need to check for WINCHSIZE or whatever
 	short t_width, t_height;
 	getSize(&t_width, &t_height);
 
@@ -76,8 +78,7 @@ int main(int argc, char** argv)
 		human_readable = Shorten sizes to Metric system, 'KGBM'.
 
 		color = by default on, colorful version. Maybe set it in color struct?
-	   Or functions for color so it returns an empty string
-		// TODO add no color option
+		Or functions for color so it returns an empty string
 
 		reverse = reverse printing order, currently -r but for Recursive Tree
 	   printing in the future maybe change to -R
@@ -147,6 +148,7 @@ int main(int argc, char** argv)
 			char* output_buffer = calloc(256, sizeof(*output_buffer));
 
 			// Print the filename if `cls` is run on a file
+			// TODO when --long is added determine what to do here
 			printFileNewline(&file, &status, output_buffer);
 		}
 		return 0;
@@ -155,19 +157,18 @@ int main(int argc, char** argv)
 	File* v_dirs = calloc(n_of_dirs, sizeof(File));
 	uint16_t num_of_files = 0U;
 
+	// Unnecessary scope
 	{
-		// Unnecessary scope
 		uint8_t dotflag = 0U;
 		while(n_of_dirs--)
 		{
-			char* name = calloc(256, sizeof(*name));
+			char name[256];
 			strcpy(name, dirs[n_of_dirs]->d_name);
 
 			// Ignore Current and parent dirs.
 			if(dotflag < 2 && (!strcmp(name, ".") || !strcmp(name, "..")))
 			{
 				++dotflag;
-				free(name);
 				free(dirs[n_of_dirs]);
 				continue;
 			}
@@ -176,9 +177,8 @@ int main(int argc, char** argv)
 				strcpy(v_dirs[num_of_files++].name, name);
 			else
 			{
-				if(*name == '.')
+				if(name[0] == '.')
 				{
-					free(name);
 					free(dirs[n_of_dirs]);
 					continue;
 				}
@@ -187,7 +187,6 @@ int main(int argc, char** argv)
 					strcpy(v_dirs[num_of_files++].name, name);
 				}
 			}
-			free(name);
 			free(dirs[n_of_dirs]);
 		}
 		free(dirs);
@@ -201,12 +200,10 @@ int main(int argc, char** argv)
 			v_dirs = temp;
 		else
 		{
-			char* buff = calloc(27, sizeof(*buff));
+			char buff[27];
 			sgetRGB(buff, 229, 195, 38);
 			fprintf(stderr, "\t%sNothing to show here...\n%s", buff, RESET);
-			free(buff);
 			free(temp);
-			free(dir);
 			return 0;
 		}
 	}
@@ -252,7 +249,6 @@ int main(int argc, char** argv)
 		printf("\n");
 
 	free(v_dirs);
-	free(dir);
 	return 0;
 }
 
@@ -358,15 +354,35 @@ int sortFile(const struct dirent** fir, const struct dirent** sec)
 
 void humanReadableSize(uint64_t size, char* dest, const bool kibi)
 {
-	const char exts[] = {'B', 'K', 'M', 'G'};
+	// XXX Might not work
 	uint8_t i = 0U;
-	uint64_t divisor = kibi ? 1024UL : 1000UL;
+	const char* exts[5];
+	uint64_t divisor;
+	if(kibi)
+	{
+		divisor = 1024ULL;
+		exts[0] = "B";
+		exts[1] = "KiB";
+		exts[2] = "MiB";
+		exts[3] = "GiB";
+		exts[4] = "TiB";
+	}
+	else
+	{
+		divisor = 1000ULL;
+		exts[0] = "B";
+		exts[1] = "K";
+		exts[2] = "M";
+		exts[3] = "G";
+		exts[4] = "T";
+	}
+
 	while(size > divisor)
 	{
 		++i;
 		size /= divisor;
 	}
-	sprintf(dest, "%lu%c", size, exts[i]);
+	sprintf(dest, "%lu%s", size, exts[i]);
 }
 
 uint8_t getColNum(const uint64_t total_strlen, const short term_width)
