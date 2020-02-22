@@ -171,6 +171,7 @@ struct Icon icons[] = {
 	{"rar", "\ufac3"},
 	{"rpm", "\uf316 "},
 	{"tar", "\uf1c6 "},
+	{"tgz", "\uf1c6 "},
 	{"z", "\uf1c6 "},
 	{"zip", "\uf1c6 "},
 	// Comics
