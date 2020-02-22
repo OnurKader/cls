@@ -24,6 +24,7 @@ typedef struct File
 	char name[256];
 	char rel_name[256];
 	size_t size;
+	// TODO Set Icon size to I dunno 27 or smth
 	char* icon;
 	color_t color;
 	char* user_name;
@@ -210,12 +211,12 @@ int main(int argc, char** argv)
 
 	for(int i = num_of_files - 1; i >= 0; --i)
 	{
-		char* name = calloc(256, sizeof(char));
+		char name[256];
 		strcpy(name, dir);
 		strcat(name, "/");
 		strcat(name, v_dirs[i].name);
 		// We add `dir`+/ so if we do cls .., it'll work properly. Using
-		// relative paths I might've change directories, but whatever.
+		// relative paths I might've changed directories, but whatever.
 
 		struct stat status;
 		lstat(name, &status);	 // lstat doesn't follow links, stat does.
@@ -226,8 +227,8 @@ int main(int argc, char** argv)
 		file.size = status.st_size;
 		total_file_size += status.st_size;
 		file.icon = getIcon(file.name, S_ISDIR(status.st_mode));
-		free(name);
-		char* output_buffer = calloc(256, sizeof(*output_buffer));
+
+		char output_buffer[256];
 		printFile(&file, &status, output_buffer);
 		total_file_width += 4 +	   // 4 because the initial space and the minimum between 2
 								   // strings is 4 spaces / 1 tab
@@ -241,8 +242,6 @@ int main(int argc, char** argv)
 			printf("\t%s\n", output_buffer);
 		else
 			printf("\t%s\t", output_buffer);
-
-		free(output_buffer);
 	}
 
 	if(!b_one_line)
@@ -288,7 +287,7 @@ void printFile(File* file, const struct stat* status, char* buff)
 		case S_IFLNK:
 			if(stat(file->rel_name, &t_stat) == -1)
 			{
-				sgetRGB(file->color.str, 255, 128, 16);
+				sgetRGB(file->color.str, 255, 101, 12);
 				break;
 			}
 			if((t_stat.st_mode & S_IFMT) == S_IFDIR)
