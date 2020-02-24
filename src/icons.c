@@ -5,8 +5,8 @@
 
 struct Icon
 {
-	char ext[16];
-	char icon[9];
+	char ext[256];
+	char icon[8];
 };
 
 struct Icon icons[] = {
@@ -191,16 +191,18 @@ struct Icon icons[] = {
 	// Games
 	{"Minecraft", "\uf872 "},
 	{"minecraft", "\uf872 "},
-	{"steam", "\uf9d2"}};
+	{"steam", "\uf9d2"},
+};
 
 static char DEFAULT_FILE[] = "\uf15b ", DEFAULT_DIR[] = "\ue5fe ";
 
-char* getIcon(char* filename, int is_dir)
+char* getIcon(const char* const filename, int is_dir)
 {
 	// Find the last '/' if exists or find last ., go reverse and take it from there
 	const unsigned long num_of_icons = (sizeof(icons) / sizeof(struct Icon));
-	char ext[128];
-	char* p = rindex(filename, '.');
+	char ext[256];
+	char* p = NULL;
+	p = rindex(filename, '.');
 	if(p == NULL)
 	{
 		// If there isn't a dot in the filename
@@ -213,6 +215,7 @@ char* getIcon(char* filename, int is_dir)
 		// There must be a function for this!
 		while(*(p++) != '\0')
 			ext[n++] = *p;
+		/* strcpy(ext, p); */
 	}
 
 	for(unsigned long i = 0U; i < num_of_icons; ++i)

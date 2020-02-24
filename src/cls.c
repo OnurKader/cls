@@ -25,7 +25,7 @@ typedef struct File
 	char rel_name[256];
 	size_t size;
 	// TODO Set Icon size to I dunno 27 or smth
-	char* icon;
+	char icon[8];
 	color_t color;
 	char* user_name;
 	ssize_t user_name_length;
@@ -145,7 +145,7 @@ int main(int argc, char** argv)
 			stat(dir, &status);
 			File file;
 			strcpy(file.name, dir);
-			file.icon = getIcon(file.name, 0);
+			strcpy(file.icon, getIcon(file.name, 0));
 			char* output_buffer = calloc(256, sizeof(*output_buffer));
 
 			// Print the filename if `cls` is run on a file
@@ -226,7 +226,7 @@ int main(int argc, char** argv)
 		strcpy(file.name, v_dirs[i].name);
 		file.size = status.st_size;
 		total_file_size += status.st_size;
-		file.icon = getIcon(file.name, S_ISDIR(status.st_mode));
+		strcpy(file.icon, getIcon(file.name, S_ISDIR(status.st_mode)));
 
 		char output_buffer[256];
 		printFile(&file, &status, output_buffer);
@@ -293,14 +293,14 @@ void printFile(File* file, const struct stat* status, char* buff)
 			if((t_stat.st_mode & S_IFMT) == S_IFDIR)
 			{
 				sgetRGB(file->color.str, 100, 255, 164);
-				if(file->icon == DEFAULT_FILE)
-					file->icon = getIcon(file->name, 1);
+				if(!strcmp(file->icon, DEFAULT_FILE))
+					strcpy(file->icon, getIcon(file->name, 1));
 			}
 			else if((t_stat.st_mode & S_IFMT) == S_IFREG)
 			{
 				sgetRGB(file->color.str, 232, 255, 32);
-				if(file->icon == DEFAULT_FILE)
-					file->icon = getIcon(file->name, 0);
+				if(!strcmp(file->icon, DEFAULT_FILE))
+					strcpy(file->icon, getIcon(file->name, 0));
 			}
 			break;
 
