@@ -9,6 +9,9 @@ ___
 
 ## Build & Install
 
+You need to have [NerdFonts](https://nerdfonts.com/) installed on your system
+to see the icons this program uses.
+
 To build, run `make` in the `src/` directory.
 
 To install, run `sudo make install`, it installs in `bin/` and copies to `/usr/local/bin/cls`
@@ -28,7 +31,7 @@ Will install it as `/usr/bin/cls`
 `cls` doesn't have as many features as the default `GNU ls` but it can do
 simple listings
 
-`cls` will just print non-hidden, files which do not start with a period '.'
+`cls` will just print non-hidden files which do _not_ start with a period '.'
 
 `cls -a || cls --all` will print hidden files, but it will ignore
 `.` and `..` by default
@@ -36,6 +39,8 @@ simple listings
 `cls -1 || cls --one-line` will print all the listings on a newline
 
 `cls -l || cls --long` will print extra information about the file / dir **_TODO_**
+
+`cls -h || cls --human` will show human readable filesizes, **_TODO_** Not implemented properly
 
 `cls -Huv || cls --help --usage --version` to get a simple help screen printed out
 
