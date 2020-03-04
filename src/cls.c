@@ -32,6 +32,7 @@ typedef struct File
 	char* group_name;
 	ssize_t group_name_length;
 	time_t modify;
+	struct stat status;
 } File;
 
 void usage(void);
@@ -146,6 +147,7 @@ int main(int argc, char** argv)
 			File file;
 			strcpy(file.name, dir);
 			strcpy(file.icon, getIcon(file.name, 0));
+			file.status = status;
 			char* output_buffer = calloc(256, sizeof(*output_buffer));
 
 			// Print the filename if `cls` is run on a file
@@ -227,6 +229,7 @@ int main(int argc, char** argv)
 		file.size = status.st_size;
 		total_file_size += status.st_size;
 		strcpy(file.icon, getIcon(file.name, S_ISDIR(status.st_mode)));
+		file.status = status;
 
 		char output_buffer[256];
 		printFile(&file, &status, output_buffer);
@@ -407,7 +410,7 @@ void getUserName(File* file)
 		fprintf(stderr, "Couldn't MALLOC!\n");
 		exit(1);
 	}
-	strcpy(file->user_name, getpwuid(geteuid())->pw_name);
+	strcpy(file->user_name, getpwuid(file->status.st_uid)->pw_name);
 }
 
 void getGroupName(File* file)
@@ -421,5 +424,5 @@ void getGroupName(File* file)
 		fprintf(stderr, "Couldn't MALLOC!\n");
 		exit(1);
 	}
-	strcpy(file->group_name, getgrgid(geteuid())->gr_name);
+	strcpy(file->group_name, getgrgid(file->status.st_gid)->gr_name);
 }
