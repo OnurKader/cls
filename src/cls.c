@@ -7,6 +7,7 @@
 
 #include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <getopt.h>
 #include <grp.h>
 #include <pwd.h>
@@ -16,6 +17,7 @@
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -315,7 +317,7 @@ void printFile(File* file, const struct stat* status, char* buff)
 			file->color.str,
 			file->icon,
 			file->name,
-			S_ISDIR(status->st_mode) ? '/' : (S_ISLNK(status->st_mode) ? '*' : ' '),
+			S_ISDIR(status->st_mode) ? '/' : (S_ISLNK(status->st_mode) ? '@' : ' '),
 			RESET);
 }
 
@@ -426,3 +428,5 @@ void getGroupName(File* file)
 	}
 	strcpy(file->group_name, getgrgid(file->status.st_gid)->gr_name);
 }
+
+

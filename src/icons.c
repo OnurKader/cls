@@ -34,6 +34,7 @@ struct Icon icons[] = {
 	{"css", "\ue749 "},
 	{"Eclipse", "\ue79e "},
 	{"eclipse", "\ue79e "},
+	{"go", "\ufcd1 "},
 	{"h", "\ue61e "},
 	{"hh", "\ue61e "},
 	{"hpp", "\ue61d "},
